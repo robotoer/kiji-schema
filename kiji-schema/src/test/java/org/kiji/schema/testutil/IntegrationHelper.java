@@ -140,6 +140,7 @@ public class IntegrationHelper extends Configured {
    * @return A result with the captured tool output.
    * @throws Exception If there is an error.
    */
+  @Deprecated
   public ToolResult runTool(Configuration conf, BaseTool tool, String[] args) throws Exception {
     // Capture STDOUT to an in-memory output stream.
     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -148,6 +149,33 @@ public class IntegrationHelper extends Configured {
     // Run the tool.
     LOG.debug("Running tool " + tool.getClass().getName() + " with args " + Arrays.toString(args));
     KijiToolLauncher launcher = new KijiToolLauncher();
+    launcher.setConf(conf);
+    int exitCode = launcher.run(tool, args);
+    return new ToolResult(exitCode, output);
+  }
+
+  /**
+   * Runs a tool and captures the console output.
+   *
+   * @param conf The configuration to run the tool with.
+   * @param tool The tool to run.
+   * @param args The command-line args to pass to the tool.
+   * @return A result with the captured tool output.
+   * @throws Exception If there is an error.
+   */
+  public ToolResult runTool(
+      Configuration conf,
+      org.kiji.common.tools.BaseTool tool,
+      final String[] args
+  ) throws Exception {
+    // Capture STDOUT to an in-memory output stream.
+    final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    tool.setPrintStream(new PrintStream(output));
+
+    // Run the tool.
+    LOG.debug("Running tool " + tool.getClass().getName() + " with args " + Arrays.toString(args));
+    final org.kiji.common.tools.KijiToolLauncher launcher =
+        new org.kiji.common.tools.KijiToolLauncher();
     int exitCode = launcher.run(tool, args, conf);
     return new ToolResult(exitCode, output);
   }

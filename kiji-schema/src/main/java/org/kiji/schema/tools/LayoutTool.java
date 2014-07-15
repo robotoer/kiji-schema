@@ -30,12 +30,10 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
-import org.kiji.common.tools.BaseTool;
 import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiURI;

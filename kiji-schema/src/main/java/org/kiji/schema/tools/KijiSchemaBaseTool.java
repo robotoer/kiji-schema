@@ -26,6 +26,9 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.kiji.schema.KijiNotInstalledException;
 
+/**
+ * The base tool for kiji-schema tools.
+ */
 public abstract class KijiSchemaBaseTool extends org.kiji.common.tools.BaseTool {
   /**
    * KijiSchema tools require HBase specific configuration entries.

@@ -96,8 +96,8 @@ public final class HelpTool extends Configured implements KijiTool {
 
   /** {@inheritDoc} */
   @Override
-  public int toolMain(List<String> args, final Configuration configuration) throws Exception {
-    List<String> nonFlagArgs = FlagParser.init(this, args.toArray(new String[args.size()]));
+  public int toolMain(final List<String> args, final Configuration configuration) throws Exception {
+    final List<String> nonFlagArgs = FlagParser.init(this, args.toArray(new String[args.size()]));
     if (null == nonFlagArgs) {
       // There was a problem parsing the flags.
       return BaseTool.FAILURE;
@@ -109,20 +109,27 @@ public final class HelpTool extends Configured implements KijiTool {
     }
 
     if (nonFlagArgs.size() > 0) {
-      String toolName = nonFlagArgs.get(0);
-      KijiTool subTool = new KijiToolLauncher().getToolForName(toolName);
-      if (null != subTool) {
-        System.out.println(subTool.getName() + ": " + subTool.getDescription());
-        System.out.println("");
-        subTool.toolMain(Collections.singletonList("--help"), subTool.generateConfiguration());
-        return 0;
-      } else {
+      final String toolName = nonFlagArgs.get(0);
+      // Make sure we also look for old style tools.
+      final org.kiji.schema.tools.KijiTool oldSubTool =
+          new org.kiji.schema.tools.KijiToolLauncher().getToolForName(toolName);
+      final KijiTool newSubTool = new KijiToolLauncher().getToolForName(toolName);
+      if (null == oldSubTool && null == newSubTool) {
         System.out.println("Error - no such tool: " + toolName);
         System.out.println("Type 'kiji help' to see all available tools.");
         System.out.println("Type 'kiji help --verbose' for additional information.");
         System.out.println("Type 'kiji help <toolName>' for tool-specific help.");
         System.out.println("");
         return 0;
+      } else if (null == oldSubTool) {
+        runNewToolHelp(newSubTool);
+        return 0;
+      } else if (null == newSubTool) {
+        runOldToolHelp(oldSubTool);
+        return 0;
+      } else {
+        System.err.println("Found two conflicting tools with name [" + toolName + "]");
+        return 1;
       }
     }
 
@@ -135,24 +142,12 @@ public final class HelpTool extends Configured implements KijiTool {
     System.out.println("TOOLS");
     System.out.println("");
 
-    for (KijiTool tool : Lookups.get(KijiTool.class)) {
-      String name = tool.getName();
-      if (null == name) {
-        System.out.println("Error: Got null from getName() in class: "
-            + tool.getClass().getName());
-        continue;
-      }
-
-      String desc = tool.getDescription();
-      if (null != desc) {
-        System.out.print("  " + name);
-        int padding = MAX_NAME_WIDTH - name.length();
-        for (int i = 0; i < padding; i++) {
-          System.out.print(" ");
-        }
-        System.out.print(desc);
-      }
-      System.out.println("");
+    for (final KijiTool tool : Lookups.get(KijiTool.class)) {
+      printNewToolUsage(tool);
+    }
+    for (final org.kiji.schema.tools.KijiTool tool
+        : Lookups.get(org.kiji.schema.tools.KijiTool.class)) {
+      printOldToolUsage(tool);
     }
 
     System.out.println("");
@@ -175,6 +170,84 @@ public final class HelpTool extends Configured implements KijiTool {
           + "type 'kiji help --verbose'.");
     }
     return 0;
+  }
+
+  /**
+   * Prints the usage of a tool.
+   *
+   * @param tool The tool to print the usage of.
+   */
+  @Deprecated
+  private static void printOldToolUsage(final org.kiji.schema.tools.KijiTool tool) {
+    final String name = tool.getName();
+    if (null == name) {
+      System.out.println("Error: Got null from getName() in class: "
+              + tool.getClass().getName());
+      return;
+    }
+
+    final String desc = tool.getDescription();
+    if (null != desc) {
+      System.out.print("  " + name);
+      final int padding = MAX_NAME_WIDTH - name.length();
+      for (int i = 0; i < padding; i++) {
+        System.out.print(" ");
+      }
+      System.out.print(desc);
+    }
+    System.out.println("");
+  }
+
+  /**
+   * Prints the usage of a tool.
+   *
+   * @param tool The tool to print the usage of.
+   */
+  private static void printNewToolUsage(final KijiTool tool) {
+    final String name = tool.getName();
+    if (null == name) {
+      System.out.println("Error: Got null from getName() in class: "
+          + tool.getClass().getName());
+      return;
+    }
+
+    final String desc = tool.getDescription();
+    if (null != desc) {
+      System.out.print("  " + name);
+      final int padding = MAX_NAME_WIDTH - name.length();
+      for (int i = 0; i < padding; i++) {
+        System.out.print(" ");
+      }
+      System.out.print(desc);
+    }
+    System.out.println("");
+  }
+
+  /**
+   * Runs a tool with the '--help' argument.
+   *
+   * @param oldSubTool The tool to run.
+   * @throws Exception If there is an error.
+   */
+  @Deprecated
+  private static void runOldToolHelp(final org.kiji.schema.tools.KijiTool oldSubTool)
+      throws Exception {
+    System.out.println(oldSubTool.getName() + ": " + oldSubTool.getDescription());
+    System.out.println("");
+    oldSubTool.setConf(HBaseConfiguration.create());
+    oldSubTool.toolMain(Collections.singletonList("--help"));
+  }
+
+  /**
+   * Runs a tool with the '--help' argument.
+   *
+   * @param newSubTool The tool to run.
+   * @throws Exception If there is an error.
+   */
+  private static void runNewToolHelp(final KijiTool newSubTool) throws Exception {
+    System.out.println(newSubTool.getName() + ": " + newSubTool.getDescription());
+    System.out.println("");
+    newSubTool.toolMain(Collections.singletonList("--help"), newSubTool.generateConfiguration());
   }
 
   /**
