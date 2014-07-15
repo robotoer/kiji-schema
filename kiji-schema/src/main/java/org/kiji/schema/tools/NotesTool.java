@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.Gson;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.annotations.ApiStability;
@@ -164,6 +166,12 @@ public final class NotesTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Metadata";
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
   }
 
   /** Possible operations of this tool. */
@@ -356,9 +364,10 @@ public final class NotesTool extends BaseTool {
     }
   }
 
-  /** {@inheritDoc} */
+  /** {@inheritDoc}
+   * @param configuration*/
   @Override
-  protected void validateFlags() {
+  protected void validateFlags(final Configuration configuration) {
     try {
       mURI = KijiURI.newBuilder(mTargetFlag).build();
     } catch (KijiURIException kurie) {
@@ -627,7 +636,10 @@ public final class NotesTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(final List<String> nonFlagArgs) throws Exception {
+  protected int run(
+      final List<String> nonFlagArgs,
+      final Configuration configuration
+  ) throws Exception {
     final Kiji kiji = Kiji.Factory.open(mURI);
     try {
       final KijiTable table = kiji.openTable(mURI.getTable());

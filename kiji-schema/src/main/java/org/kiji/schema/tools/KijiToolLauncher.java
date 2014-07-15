@@ -22,8 +22,6 @@ package org.kiji.schema.tools;
 import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.util.GenericOptionsParser;
 
 import org.kiji.annotations.ApiAudience;
@@ -42,8 +40,7 @@ import org.kiji.delegation.Lookups;
  */
 @ApiAudience.Public
 @ApiStability.Evolving
-public final class KijiToolLauncher extends Configured {
-
+public final class KijiToolLauncher {
   /**
    * Programmatic entry point to the tool launcher. Locates a tool to run
    * based on the name provided as the first argument, then invokes it.
@@ -55,7 +52,7 @@ public final class KijiToolLauncher extends Configured {
    * @throws Exception If there is an error.
    * @return 0 on program success, non-zero on error.
    */
-  public int run(String[] args) throws Exception {
+  public int run(final String[] args) throws Exception {
     if (args.length == 0) {
       System.err.println("Error: Must run 'kiji <toolName>'.");
       System.err.println("Try running 'kiji help' to see the available tools.");
@@ -115,26 +112,40 @@ public final class KijiToolLauncher extends Configured {
    * @throws Exception If there is an error.
    * @return 0 on program success, non-zero on error.
    */
-  public int run(KijiTool tool, String[] args) throws Exception {
-    Configuration conf = getConf();
-    if (conf == null) {
-      conf = new Configuration();
-      setConf(conf);
-    }
+  public int run(
+      final KijiTool tool,
+      final String[] args
+  ) throws Exception {
+    return run(tool, args, tool.generateConfiguration());
+  }
 
+  /**
+   * Programmatic entry point to the tool launcher if a tool is already selected.
+   * Hadoop property-based arguments will be parsed by KijiToolLauncher.run()
+   * in a manner similar to Hadoop's ToolRunner.
+   *
+   * @param tool The KijiTool to run.
+   * @param args The command-line arguments, excluding the name of the tool to run.
+   * @param configuration The hadoop configuration containing settings pertaining to the tool to
+   *     run.
+   * @throws Exception If there is an error.
+   * @return 0 on program success, non-zero on error.
+   */
+  public int run(
+      final KijiTool tool,
+      final String[] args,
+      final Configuration configuration
+  ) throws Exception {
     // Mimic behavior of Hadoop's ToolRunner.run().
-    GenericOptionsParser parser = new GenericOptionsParser(conf, args);
-    conf = HBaseConfiguration.addHbaseResources(conf);
-
-    tool.setConf(conf);
+    final GenericOptionsParser parser = new GenericOptionsParser(configuration, args);
 
     // Get remaining arguments and invoke the tool with them.
-    String[] toolArgs = parser.getRemainingArgs();
+    final String[] toolArgs = parser.getRemainingArgs();
 
     // Work around for CDH4 and Hadoop1 setting different "GenericOptionsParser used" flags.
-    conf.setBooleanIfUnset("mapred.used.genericoptionsparser", true);
-    conf.setBooleanIfUnset("mapreduce.client.genericoptionsparser.used", true);
-    return tool.toolMain(Arrays.asList(toolArgs));
+    configuration.setBooleanIfUnset("mapred.used.genericoptionsparser", true);
+    configuration.setBooleanIfUnset("mapreduce.client.genericoptionsparser.used", true);
+    return tool.toolMain(Arrays.asList(toolArgs), configuration);
   }
 
   /**
@@ -144,7 +155,7 @@ public final class KijiToolLauncher extends Configured {
    * @param args The command-line arguments, starting with the name of the tool to run.
    * @throws Exception If there is an error.
    */
-  public static void main(String[] args) throws Exception {
+  public static void main(final String[] args) throws Exception {
     System.exit(new KijiToolLauncher().run(args));
   }
 }

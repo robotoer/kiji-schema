@@ -26,6 +26,8 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 import org.apache.avro.Schema;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +132,13 @@ public final class SchemaTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void validateFlags() throws Exception {
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void validateFlags(final Configuration configuration) throws Exception {
     // Ensures that only one operation flag is specified at a time.
     int count = 0;
     count += (mRegisterFlag != null && !mRegisterFlag.isEmpty()) ? 1 : 0;
@@ -316,11 +324,11 @@ public final class SchemaTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     Preconditions.checkArgument(nonFlagArgs.size() != 0, "Specify the KijiURI of your target "
         + "instance with `kiji get kiji://hbase-cluster/instance`");
     mURI = KijiURI.newBuilder(Preconditions.checkNotNull(nonFlagArgs.get(0))).build();
-    mKiji = Kiji.Factory.open(mURI, getConf());
+    mKiji = Kiji.Factory.open(mURI, configuration);
     try {
       if (mRegisterFlag != null && !mRegisterFlag.isEmpty()) {
         return registerSchema();

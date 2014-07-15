@@ -26,6 +26,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import org.apache.curator.framework.CuratorFramework;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.slf4j.Logger;
@@ -101,8 +103,8 @@ public final class ServicesTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
-    super.setup();
+  protected void setup(final Configuration configuration) throws Exception {
+    super.setup(configuration);
     boolean kijiURISpecified = mKijiURIFlag != null && !mKijiURIFlag.isEmpty();
     boolean zkEnsembleSpecified = mZKEnsembleFlag != null && !mZKEnsembleFlag.isEmpty();
 
@@ -126,8 +128,12 @@ public final class ServicesTool extends BaseTool {
     }
   }
 
+  /** {@inheritDoc} */
   @Override
-  protected int run(List<String> instanceLookups) throws Exception {
+  protected int run(
+      List<String> instanceLookups,
+      final Configuration configuration
+  ) throws Exception {
     // NOTE: this is not the 'recommended' way to use service discovery. Typically, an application
     // needs to discover services of a known type, at which point it could use the Curator discovery
     // framework to automatically discover registered services and deserialize payloads. Because
@@ -229,18 +235,27 @@ public final class ServicesTool extends BaseTool {
     return instances;
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getName() {
     return "services";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getDescription() {
     return "Discover registered Kiji services.";
   }
 
+  /** {@inheritDoc} */
   @Override
   public String getCategory() {
     return "Admin";
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
   }
 }

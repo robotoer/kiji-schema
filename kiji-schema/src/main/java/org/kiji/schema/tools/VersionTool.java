@@ -22,6 +22,8 @@ package org.kiji.schema.tools;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
@@ -64,7 +66,13 @@ public final class VersionTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void setup(final Configuration configuration) throws Exception {
     Preconditions.checkArgument((mKijiURIFlag != null) && !mKijiURIFlag.isEmpty(),
         "Specify the Kiji instance to uninstall with --kiji=kiji://hbase-address/kiji-instance");
     mKijiURI = KijiURI.newBuilder(mKijiURIFlag).build();
@@ -74,14 +82,14 @@ public final class VersionTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     final String clientSoftwareVersion = VersionInfo.getSoftwareVersion();
     getPrintStream().println("kiji client software version: " + clientSoftwareVersion);
 
     final ProtocolVersion clientDataVersion = VersionInfo.getClientDataVersion();
     getPrintStream().println("kiji client data version: " + clientDataVersion);
 
-    final Kiji kiji = Kiji.Factory.open(mKijiURI, getConf());
+    final Kiji kiji = Kiji.Factory.open(mKijiURI, configuration);
     try {
       final ProtocolVersion clusterDataVersion = VersionInfo.getClusterDataVersion(kiji);
       getPrintStream().println("kiji cluster data version: " + clusterDataVersion);

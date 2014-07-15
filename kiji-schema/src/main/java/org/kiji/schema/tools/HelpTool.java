@@ -26,7 +26,9 @@ import java.util.List;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
@@ -70,6 +72,12 @@ public final class HelpTool extends Configured implements KijiTool {
 
   /** {@inheritDoc} */
   @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public String getUsageString() {
     return
         "Usage:'n"
@@ -85,7 +93,7 @@ public final class HelpTool extends Configured implements KijiTool {
 
   /** {@inheritDoc} */
   @Override
-  public int toolMain(List<String> args) throws Exception {
+  public int toolMain(List<String> args, final Configuration configuration) throws Exception {
     List<String> nonFlagArgs = FlagParser.init(this, args.toArray(new String[args.size()]));
     if (null == nonFlagArgs) {
       // There was a problem parsing the flags.
@@ -103,7 +111,7 @@ public final class HelpTool extends Configured implements KijiTool {
       if (null != subTool) {
         System.out.println(subTool.getName() + ": " + subTool.getDescription());
         System.out.println("");
-        subTool.toolMain(Collections.singletonList("--help"));
+        subTool.toolMain(Collections.singletonList("--help"), configuration);
         return 0;
       } else {
         System.out.println("Error - no such tool: " + toolName);

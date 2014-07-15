@@ -45,6 +45,7 @@ import org.kiji.common.flags.Flag
 import org.kiji.common.flags.FlagParser
 import org.kiji.schema.tools.BaseTool
 import org.slf4j.LoggerFactory
+import org.apache.hadoop.hbase.HBaseConfiguration
 
 /**
  * Command-line tool to inspect common files used in Map/Reduce jobs.
@@ -83,8 +84,8 @@ class InspectFileTool extends BaseTool {
    *
    * @param path is the Hadoop path of the sequence file to read.
    */
-  private def readSequenceFile(path: Path): Unit = {
-    val reader = new SequenceFile.Reader(getConf, SequenceFile.Reader.file(path))
+  private def readSequenceFile(path: Path, configuration: Configuration): Unit = {
+    val reader = new SequenceFile.Reader(configuration, SequenceFile.Reader.file(path))
     try {
       Console.err.println("Key class: %s".format(reader.getKeyClassName))
       Console.err.println("Value class: %s".format(reader.getValueClassName))
@@ -97,10 +98,10 @@ class InspectFileTool extends BaseTool {
       }
 
       val key: Writable =
-          ReflectionUtils.newInstance(reader.getKeyClass, getConf)
+          ReflectionUtils.newInstance(reader.getKeyClass, configuration)
           .asInstanceOf[Writable]
       val value: Writable =
-          ReflectionUtils.newInstance(reader.getValueClass, getConf)
+          ReflectionUtils.newInstance(reader.getValueClass, configuration)
           .asInstanceOf[Writable]
       while (true) {
         val position = reader.getPosition
@@ -119,14 +120,14 @@ class InspectFileTool extends BaseTool {
    *
    * @param path is the Hadoop path of the map file to read.
    */
-  private def readMapFile(path: Path): Unit = {
-    val reader = new MapFile.Reader(path, getConf)
+  private def readMapFile(path: Path, configuration: Configuration): Unit = {
+    val reader = new MapFile.Reader(path, configuration)
     try {
       val key: WritableComparable[_] =
-          ReflectionUtils.newInstance(reader.getKeyClass, getConf)
+          ReflectionUtils.newInstance(reader.getKeyClass, configuration)
           .asInstanceOf[WritableComparable[_]]
       val value: Writable =
-          ReflectionUtils.newInstance(reader.getValueClass, getConf)
+          ReflectionUtils.newInstance(reader.getValueClass, configuration)
           .asInstanceOf[Writable]
       while (true) {
         if (!reader.next(key, value)) {
@@ -144,9 +145,9 @@ class InspectFileTool extends BaseTool {
    *
    * @param path is the Hadoop path to the HFile to read.
    */
-  private def readHFile(path: Path): Unit = {
-    val cacheConf = new CacheConfig(getConf)
-    val fs = FileSystem.get(getConf)
+  private def readHFile(path: Path, configuration: Configuration): Unit = {
+    val cacheConf = new CacheConfig(configuration)
+    val fs = FileSystem.get(configuration)
     val reader: HFile.Reader = HFile.createReader(fs, path, cacheConf)
     try {
       val cacheBlocks = false
@@ -205,8 +206,8 @@ class InspectFileTool extends BaseTool {
    *
    * @param path is the Hadoop path of the text file to read.
    */
-  def readTextFile(path: Path): Unit = {
-    val fs = FileSystem.get(getConf)
+  def readTextFile(path: Path, configuration: Configuration): Unit = {
+    val fs = FileSystem.get(configuration)
     val istream = fs.open(path)
     try {
       IOUtils.copy(istream, Console.out)
@@ -269,12 +270,14 @@ class InspectFileTool extends BaseTool {
     return None
   }
 
+  override def generateConfiguration(): Configuration = HBaseConfiguration.create()
+
   /**
    * Program entry point.
    *
-   * @param args is the array of command-line arguments.
+   * @param unparsed is the array of command-line arguments.
    */
-  override def run(unparsed: java.util.List[String]): Int = {
+  override def run(unparsed: java.util.List[String], configuration: Configuration): Int = {
     // Requires either --path=<path> or a single unnamed argument <path> (exclusive OR):
     if (!((unparsed.size == 1) ^ ((pathFlag != null) && unparsed.isEmpty))) {
       FlagParser.printUsage(this, Console.out)
@@ -285,18 +288,18 @@ class InspectFileTool extends BaseTool {
     val filePath = new Path(path)
 
     if (format == null) {
-      format = guessFileType(filePath, getConf) match {
+      format = guessFileType(filePath, configuration) match {
         case Some(fmt) => fmt
         case None => "text"  // assume text if no other type is detected
       }
       Log.info("Detected file type: {}", format)
     }
     format match {
-      case "seq" => readSequenceFile(filePath)
-      case "map" => readMapFile(filePath)
-      case "hfile" => readHFile(filePath)
+      case "seq" => readSequenceFile(filePath, configuration)
+      case "map" => readMapFile(filePath, configuration)
+      case "hfile" => readHFile(filePath, configuration)
       case "avro" => readAvroContainer(filePath)
-      case "text" => readTextFile(filePath)
+      case "text" => readTextFile(filePath, configuration)
       case _ => sys.error("Unknown file format: %s".format(format))
     }
     return BaseTool.SUCCESS

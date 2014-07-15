@@ -24,6 +24,7 @@ import java.util.List;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
@@ -85,8 +86,14 @@ public final class FlushTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void validateFlags() throws Exception {
-    super.validateFlags();
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void validateFlags(final Configuration configuration) throws Exception {
+    super.validateFlags(configuration);
     Preconditions.checkArgument((mTargetURIFlag != null) && !mTargetURIFlag.isEmpty(),
         "Specify a target Kiji instance or table "
         + "with --target=kiji://hbase-adress/kiji-instance[/table].");
@@ -149,25 +156,25 @@ public final class FlushTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
-    super.setup();
-    getConf().setInt(HConstants.ZOOKEEPER_CLIENT_PORT, mTargetURI.getZookeeperClientPort());
-    getConf().set(HConstants.ZOOKEEPER_QUORUM,
+  protected void setup(final Configuration configuration) throws Exception {
+    super.setup(configuration);
+    configuration.setInt(HConstants.ZOOKEEPER_CLIENT_PORT, mTargetURI.getZookeeperClientPort());
+    configuration.set(HConstants.ZOOKEEPER_QUORUM,
         Joiner.on(",").join(mTargetURI.getZookeeperQuorumOrdered()));
-    setConf(HBaseConfiguration.addHbaseResources(getConf()));
-    mHBaseAdmin = new HBaseAdmin(getConf());
+    HBaseConfiguration.addHbaseResources(configuration);
+    mHBaseAdmin = new HBaseAdmin(configuration);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected void cleanup() throws IOException {
+  protected void cleanup(final Configuration configuration) throws IOException {
     ResourceUtils.closeOrLog(mHBaseAdmin);
-    super.cleanup();
+    super.cleanup(configuration);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     if (mFlushMeta) {
       getPrintStream().println("Flushing metadata tables for kiji instance: "
           + mTargetURI.toString());

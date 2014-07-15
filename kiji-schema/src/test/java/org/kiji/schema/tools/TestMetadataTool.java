@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -47,22 +48,24 @@ public class TestMetadataTool extends KijiToolTest {
     kijiBackup.createTable(KijiTableLayouts.getLayout(KijiTableLayouts.FULL_FEATURED));
 
     // Backup metadata for kijiBackup.
-    List<String> args = Lists.newArrayList("--kiji=" + kijiBackup.getURI().toOrderedString(),
-        "--backup=" + backupFile.getPath());
-    MetadataTool tool = new MetadataTool();
-    tool.setConf(getConf());
-    assertEquals(BaseTool.SUCCESS, tool.toolMain(args));
+    final List<String> args1 = Lists.newArrayList(
+        "--kiji=" + kijiBackup.getURI().toOrderedString(),
+        "--backup=" + backupFile.getPath()
+    );
+    final MetadataTool tool1 = new MetadataTool();
+    assertEquals(BaseTool.SUCCESS, tool1.toolMain(args1, getConf()));
 
     // Check that kijiBackup and kijiRestored do not intersect.
     assertFalse(kijiRestored.getTableNames().containsAll(kijiBackup.getTableNames()));
 
     // Restore metadata from kijiBackup to kijiRestored.
-    args = Lists.newArrayList("--kiji=" + kijiRestored.getURI().toOrderedString(),
+    final ArrayList<String> args2 = Lists.newArrayList(
+        "--kiji=" + kijiRestored.getURI().toOrderedString(),
         "--restore=" + backupFile.getPath(),
-        "--interactive=false");
-    tool = new MetadataTool();
-    tool.setConf(getConf());
-    assertEquals(BaseTool.SUCCESS, tool.toolMain(args));
+        "--interactive=false"
+    );
+    final MetadataTool tool2 = new MetadataTool();
+    assertEquals(BaseTool.SUCCESS, tool2.toolMain(args2, getConf()));
     assertTrue(kijiRestored.getTableNames().containsAll(kijiBackup.getTableNames()));
   }
 }

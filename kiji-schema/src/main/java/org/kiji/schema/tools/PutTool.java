@@ -27,6 +27,8 @@ import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.DecoderFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +102,13 @@ public final class PutTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws IOException {
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void setup(final Configuration configuration) throws IOException {
     Preconditions.checkArgument((mColumnURIFlag != null) && !mColumnURIFlag.isEmpty(),
         "Specify a target table to write synthesized data to with "
         + "--table=kiji://hbase-address/kiji-instance/table");
@@ -119,13 +127,13 @@ public final class PutTool extends BaseTool {
         + "--target=kiji://hbase-address/kiji-instance/table/family:qualifier",
         mColumnURI);
 
-    mKiji = Kiji.Factory.open(mColumnURI, getConf());
+    mKiji = Kiji.Factory.open(mColumnURI, configuration);
     mTable = mKiji.openTable(mColumnURI.getTable());
   }
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     final KijiColumnName column = mColumnURI.getColumns().get(0);
     final KijiTableLayout layout = mTable.getLayout();
     final CellSchema cellSchema = layout.getCellSchema(column);
@@ -191,7 +199,7 @@ public final class PutTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void cleanup() {
+  protected void cleanup(final Configuration configuration) {
     ResourceUtils.releaseOrLog(mTable);
     ResourceUtils.releaseOrLog(mKiji);
   }

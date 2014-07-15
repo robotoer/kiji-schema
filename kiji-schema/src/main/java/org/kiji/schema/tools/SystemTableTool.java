@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Locale;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +104,13 @@ public final class SystemTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  public void validateFlags() throws Exception {
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void validateFlags(final Configuration configuration) throws Exception {
     mKijiURI = KijiURI.newBuilder(mURIFlag).build();
     Preconditions.checkNotNull(mKijiURI.getInstance(),
         "Specify a Kiji instance with --kiji=kiji://hbase-address/kiji-instance");
@@ -118,8 +126,8 @@ public final class SystemTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
-    mKiji = Kiji.Factory.open(mKijiURI, getConf());
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
+    mKiji = Kiji.Factory.open(mKijiURI, configuration);
     try {
       mTable = mKiji.getSystemTable();
       switch (mDoMode) {

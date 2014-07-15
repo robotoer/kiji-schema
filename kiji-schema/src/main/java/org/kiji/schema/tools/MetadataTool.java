@@ -26,6 +26,8 @@ import com.google.common.base.Preconditions;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.specific.SpecificDatumReader;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,6 +89,12 @@ public final class MetadataTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Metadata";
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
   }
 
   /**
@@ -163,7 +171,7 @@ public final class MetadataTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
+  protected void setup(final Configuration configuration) throws Exception {
     Preconditions.checkArgument((mKijiURIFlag != null) && !mKijiURIFlag.isEmpty(),
         "Specify the Kiji instance to uninstall with --kiji=kiji://hbase-address/kiji-instance");
     mKijiURI = KijiURI.newBuilder(mKijiURIFlag).build();
@@ -181,8 +189,8 @@ public final class MetadataTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
-    final Kiji kiji = Kiji.Factory.open(mKijiURI, getConf());
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
+    final Kiji kiji = Kiji.Factory.open(mKijiURI, configuration);
     try {
       if ((mOutFile != null) && !mOutFile.isEmpty()) {
         try {

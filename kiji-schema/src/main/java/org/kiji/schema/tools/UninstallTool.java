@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
@@ -65,8 +67,14 @@ public final class UninstallTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
-    super.setup();
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void setup(final Configuration configuration) throws Exception {
+    super.setup(configuration);
     Preconditions.checkArgument((mKijiURIFlag != null) && !mKijiURIFlag.isEmpty(),
         "Specify the Kiji instance to uninstall with --kiji=kiji://hbase-address/kiji-instance");
     mKijiURI = KijiURI.newBuilder(mKijiURIFlag).build();
@@ -76,10 +84,10 @@ public final class UninstallTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     getPrintStream().println("Deleting kiji instance: " + mKijiURI.toString());
     if (isInteractive())  {
-      final Kiji kiji = Kiji.Factory.open(mKijiURI, getConf());
+      final Kiji kiji = Kiji.Factory.open(mKijiURI, configuration);
       try {
         getPrintStream().println("WARNING: This instance contains the table(s):");
         for (String name : kiji.getTableNames()) {
@@ -97,7 +105,7 @@ public final class UninstallTool extends BaseTool {
       }
     }
     try {
-      KijiInstaller.get().uninstall(mKijiURI, getConf());
+      KijiInstaller.get().uninstall(mKijiURI, configuration);
       getPrintStream().println("Deleted kiji instance: " + mKijiURI.toString());
       return SUCCESS;
     } catch (IOException ioe) {

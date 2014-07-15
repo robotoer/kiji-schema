@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
-import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,19 +48,20 @@ import org.kiji.schema.KijiNotInstalledException;
  * <ol>
  *   <li> Parse command-line flags to the tool and set the appropriate fields. Subclasses
  *     wishing to add flags to a tool should use the {@link Flag} annotation.</li>
- *   <li> Run the {@link #validateFlags()} method. Subclasses wishing to validate custom
- *     command-line arguments should override this method but take care to call
- *     <code>super.validateFlags()</code></li>
- *   <li> Run the {@link #setup()} method. Subclasses wishing to implement custom setup logic
- *     should override this method but take care to call <code>super.setup()</code></li>
- *   <li> Run the {@link #run(java.util.List)} method. Subclasses should implement their main
- *     command logic here. The argument to <code>run</code> is a {@link String} list of
- *     arguments passed that were not arguments to the Hadoop framework or flags specified via
- *     {@link Flag} annotations.</li>
- *   <li> Run the {@link #cleanup()} method. Subclasses wishing to implement custom cleanup
- *     logic should override this method but take care to call <code>super.cleanup</code>.
- *     <code>cleanup</code> will run even if there is an exception while executing
- *     <code>setup</code> or <code>run</code>.
+ *   <li> Run the {@link #validateFlags(org.apache.hadoop.conf.Configuration)} method. Subclasses
+ *     wishing to validate custom command-line arguments should override this method but take care
+ *     to call <code>super.validateFlags()</code></li>
+ *   <li> Run the {@link #setup(org.apache.hadoop.conf.Configuration)} method. Subclasses wishing to
+ *     implement custom setup logic should override this method but take care to call
+ *     <code>super.setup()</code></li>
+ *   <li> Run the {@link #run(java.util.List, org.apache.hadoop.conf.Configuration)} method.
+ *     Subclasses should implement their main command logic here. The argument to <code>run</code>
+ *     is a {@link String} list of arguments passed that were not arguments to the Hadoop framework
+ *     or flags specified via {@link Flag} annotations.</li>
+ *   <li> Run the {@link #cleanup(org.apache.hadoop.conf.Configuration)} method. Subclasses wishing
+ *     to implement custom cleanup logic should override this method but take care to call
+ *     <code>super.cleanup</code>. <code>cleanup</code> will run even if there is an exception while
+ *     executing <code>setup</code> or <code>run</code>.
  * </ol>
  *
  * Tools needing to prompt the user for a yes/no answer should use the {@link #yesNoPrompt} method.
@@ -68,7 +69,7 @@ import org.kiji.schema.KijiNotInstalledException;
 @ApiAudience.Framework
 @ApiStability.Evolving
 @Inheritance.Extensible
-public abstract class BaseTool extends Configured implements KijiTool {
+public abstract class BaseTool implements KijiTool {
   private static final Logger LOG = LoggerFactory.getLogger(BaseTool.class);
 
   /** Pattern use for yes responses.  Matches 'y' or 'yes'. */
@@ -184,7 +185,7 @@ public abstract class BaseTool extends Configured implements KijiTool {
    * @return <code>true</code> if the user answer yes, <code>false</code> if the user answered no.
    * @throws IOException if there is a problem reading from the terminal.
    */
-  protected final boolean yesNoPrompt(String question) throws IOException {
+  protected final boolean yesNoPrompt(final String question) throws IOException {
     return confirmationPrompt(question, YES_OR_NO_HINT, YES_PATTERN, NO_PATTERN);
   }
 
@@ -199,7 +200,10 @@ public abstract class BaseTool extends Configured implements KijiTool {
    * @return <code>true</code> if the string was entered successfully, <code>false</code> if not.
    * @throws IOException if there is a problem reading from the terminal.
    */
-  protected final boolean inputConfirmation(String question, String confirm) throws IOException {
+  protected final boolean inputConfirmation(
+      final String question,
+      final String confirm
+  ) throws IOException {
     String hint = String.format("Type '%s' without the quotes to confirm(or nothing to cancel):",
         confirm);
     Pattern confirmPattern = Pattern.compile(Pattern.quote(confirm), Pattern.CASE_INSENSITIVE);
@@ -219,10 +223,10 @@ public abstract class BaseTool extends Configured implements KijiTool {
    * @throws IOException if there is a problem reading from the terminal.
    */
   private boolean confirmationPrompt(
-      String question,
-      String hint,
-      Pattern confirmPattern,
-      Pattern denyPattern
+      final String question,
+      final String hint,
+      final Pattern confirmPattern,
+      final Pattern denyPattern
   ) throws IOException {
     Preconditions.checkState(mInteractiveFlag);
     BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(), "UTF-8"));
@@ -259,7 +263,7 @@ public abstract class BaseTool extends Configured implements KijiTool {
    * @return whether the operation may proceed, or not.
    * @throws IOException on I/O error.
    */
-  protected boolean mayProceed(String format, Object...arguments) throws IOException {
+  protected boolean mayProceed(final String format, final Object...arguments) throws IOException {
     if (!isInteractive()) {
       return true;
     }
@@ -276,13 +280,15 @@ public abstract class BaseTool extends Configured implements KijiTool {
    *
    * @param args the command-line arguments to the tool not including the
    *     tool name itself.
+   * @param configuration The hadoop configuration containing settings pertaining to this tool.
+   *     Generated by {@link #generateConfiguration()}.
    * @throws Exception if there's an error inside the tool.
    * @return 0 on success, non-zero on failure.
    *
    * {@inheritDoc}
    */
   @Override
-  public int toolMain(List<String> args) throws Exception {
+  public int toolMain(final List<String> args, final Configuration configuration) throws Exception {
     try {
       List<String> nonFlagArgs = FlagParser.init(this, args.toArray(new String[args.size()]));
       if (null == nonFlagArgs) {
@@ -297,7 +303,7 @@ public abstract class BaseTool extends Configured implements KijiTool {
 
       // Execute custom functionality implemented in subclasses.
       try {
-        validateFlags();
+        validateFlags(configuration);
         boolean exceptionThrown = false;
         int returnFlag = FAILURE;
 
@@ -307,8 +313,8 @@ public abstract class BaseTool extends Configured implements KijiTool {
               new KijiCommand.Builder(this.getClass())
                   .withCommandName(this.getClass().getSimpleName())
                   .withSuccess(true).build(), true);
-          setup();
-          returnFlag = run(nonFlagArgs);
+          setup(configuration);
+          returnFlag = run(nonFlagArgs, configuration);
           return returnFlag;
         } catch (Exception exn) {
           exceptionThrown = true;
@@ -317,14 +323,14 @@ public abstract class BaseTool extends Configured implements KijiTool {
 
           if (exceptionThrown) {
             try {
-              cleanup();
+              cleanup(configuration);
             } catch (Exception nestedExn) {
               LOG.error("Nested error in tool cleanup(), "
                   + "likely caused by error in tool setup() or run(): {}",
                   nestedExn.getMessage());
             }
           } else {
-            cleanup();
+            cleanup(configuration);
           }
         }
       } catch (ToolError te) {
@@ -341,33 +347,44 @@ public abstract class BaseTool extends Configured implements KijiTool {
   /**
    * Validates the command-line flags.
    *
+   * @param configuration The hadoop configuration containing settings pertaining to this tool.
+   *     Generated by {@link #generateConfiguration()}.
    * @throws Exception If there is an invalid flag.
    */
-  protected void validateFlags() throws Exception {}
+  protected void validateFlags(final Configuration configuration) throws Exception {}
 
   /**
    * Called to initialize the tool just before running.
    *
+   * @param configuration The hadoop configuration containing settings pertaining to this tool.
+   *     Generated by {@link #generateConfiguration()}.
    * @throws Exception If there is an error.
    */
-  protected void setup() throws Exception {}
+  protected void setup(final Configuration configuration) throws Exception {}
 
   /**
    * Cleans up any open file handles, connections, etc.
    * Note: all subclasses of BaseTool should call super.cleanup()
    *
+   * @param configuration The hadoop configuration containing settings pertaining to this tool.
+   *     Generated by {@link #generateConfiguration()}.
    * @throws IOException If there is an error.
    */
-  protected void cleanup() throws IOException {}
+  protected void cleanup(final Configuration configuration) throws IOException {}
 
   /**
    * Runs the tool.
    *
    * @param nonFlagArgs The arguments on the command-line that were not parsed as flags.
+   * @param configuration The hadoop configuration containing settings pertaining to this tool.
+   *     Generated by {@link #generateConfiguration()}.
    * @return The program exit code.
    * @throws Exception If there is an error.
    */
-  protected abstract int run(List<String> nonFlagArgs) throws Exception;
+  protected abstract int run(
+      final List<String> nonFlagArgs,
+      final Configuration configuration
+  ) throws Exception;
 
   /**
    * The output print stream the tool should be writing to.
@@ -388,7 +405,7 @@ public abstract class BaseTool extends Configured implements KijiTool {
    *
    * @param printStream The output print stream to use.
    */
-  public void setPrintStream(PrintStream printStream) {
+  public void setPrintStream(final PrintStream printStream) {
     if (null == mPrintStream) {
       mPrintStream = printStream;
     } else {
@@ -415,7 +432,7 @@ public abstract class BaseTool extends Configured implements KijiTool {
    *
    * @param inputStream The input stream to use.
    */
-  public void setInputStream(InputStream inputStream) {
+  public void setInputStream(final InputStream inputStream) {
     if (null == mInputStream) {
       mInputStream = inputStream;
     } else {

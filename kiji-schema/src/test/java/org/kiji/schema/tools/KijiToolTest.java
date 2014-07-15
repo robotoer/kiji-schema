@@ -70,19 +70,21 @@ public abstract class KijiToolTest extends KijiClientTest {
    * @return the UNIX like status code representing the tool's execution result.
    * @throws Exception if there is an error when running the tool.
    */
-  protected final int runToolWithInput(BaseTool tool, String input, String... arguments)
-      throws Exception {
+  protected final int runToolWithInput(
+      final BaseTool tool,
+      final String input,
+      final String... arguments
+  ) throws Exception {
     final ByteArrayOutputStream toolOutputBytes = new ByteArrayOutputStream();
     final PrintStream pstream = new PrintStream(toolOutputBytes);
     final InputStream istream = new ByteArrayInputStream(input.getBytes());
 
     tool.setPrintStream(pstream);
     tool.setInputStream(istream);
-    tool.setConf(getConf());
 
     try {
       LOG.info("Running tool: '{}' with parameters {}", tool.getName(), arguments);
-      return tool.toolMain(Lists.newArrayList(arguments));
+      return tool.toolMain(Lists.newArrayList(arguments), getConf());
     } finally {
       pstream.flush();
       pstream.close();

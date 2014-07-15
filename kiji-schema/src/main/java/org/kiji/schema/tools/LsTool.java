@@ -94,6 +94,12 @@ public final class LsTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public String getUsageString() {
     return
         "Usage:\n"
@@ -188,14 +194,14 @@ public final class LsTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     if (nonFlagArgs.isEmpty()) {
       nonFlagArgs.add(KConstants.DEFAULT_HBASE_URI);
     }
 
     int status = SUCCESS;
     for (String arg : nonFlagArgs) {
-      status = (run(KijiURI.newBuilder(arg).build()) == SUCCESS) ? status : FAILURE;
+      status = (run(KijiURI.newBuilder(arg).build(), configuration) == SUCCESS) ? status : FAILURE;
     }
     return status;
   }
@@ -205,10 +211,11 @@ public final class LsTool extends BaseTool {
    * Can be recursively called by run(List<String>).
    *
    * @param argURI Kiji URI from which to list instances, tables, or columns.
+   * @param configuration for this tool.
    * @return A program exit code (zero on success).
    * @throws Exception If there is an error.
    */
-  private int run(final KijiURI argURI) throws Exception {
+  private int run(final KijiURI argURI, final Configuration configuration) throws Exception {
     if (argURI.getZookeeperQuorum() == null) {
       getPrintStream().printf("Specify a cluster with argument: kiji://zookeeper-quorum%n");
       return FAILURE;
@@ -219,7 +226,7 @@ public final class LsTool extends BaseTool {
       return listInstances(argURI);
     }
 
-    final Kiji kiji = Kiji.Factory.open(argURI, getConf());
+    final Kiji kiji = Kiji.Factory.open(argURI, configuration);
     try {
       if (argURI.getTable() == null) {
         // List tables in this kiji instance.
@@ -258,6 +265,7 @@ public final class LsTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    System.exit(new KijiToolLauncher().run(new LsTool(), args));
+    final LsTool lsTool = new LsTool();
+    System.exit(new KijiToolLauncher().run(lsTool, args, lsTool.generateConfiguration()));
   }
 }

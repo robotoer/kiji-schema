@@ -27,8 +27,10 @@ import java.util.Map;
 import java.util.NavigableMap;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import org.kiji.annotations.ApiAudience;
@@ -113,7 +115,13 @@ public final class LayoutTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void validateFlags() throws Exception {
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void validateFlags(final Configuration configuration) throws Exception {
     Preconditions.checkArgument((mTableURIFlag != null) && !mTableURIFlag.isEmpty(),
         "Specify a table with --table=kiji://hbase-address/kiji-instance/table");
     mTableURI = KijiURI.newBuilder(mTableURIFlag).build();
@@ -158,14 +166,18 @@ public final class LayoutTool extends BaseTool {
    * Loads a table layout descriptor from a JSON-encoded file.
    *
    * @param filePath Path to a JSON-encoded table layout descriptor.
+   * @param configuration for this tool.
    * @return the table layout descriptor decoded from the file.
    * @throws Exception on error.
    */
-  private TableLayoutDesc loadJsonTableLayoutDesc(String filePath) throws Exception {
+  private TableLayoutDesc loadJsonTableLayoutDesc(
+      final String filePath,
+      final Configuration configuration
+  ) throws Exception {
     final Path path = new Path(filePath);
     final FileSystem fs = fileSystemSpecified(path)
-        ? path.getFileSystem(getConf())
-        : FileSystem.getLocal(getConf());
+        ? path.getFileSystem(configuration)
+        : FileSystem.getLocal(configuration);
     final InputStream istream = fs.open(path);
     try {
       return KijiTableLayout.readTableLayoutDescFromJSON(istream);
@@ -179,10 +191,11 @@ public final class LayoutTool extends BaseTool {
    * Implements the --do=set operation.
    *
    * @param kiji Kiji instance.
+   * @param configuration for this tool.
    * @throws Exception on error.
    */
-  private void setLayout(Kiji kiji) throws Exception {
-    final TableLayoutDesc layoutDesc = loadJsonTableLayoutDesc(mLayout);
+  private void setLayout(final Kiji kiji, final Configuration configuration) throws Exception {
+    final TableLayoutDesc layoutDesc = loadJsonTableLayoutDesc(mLayout, configuration);
     Preconditions.checkArgument(mTableURI.getTable().equals(layoutDesc.getName()),
         "Descriptor table name '%s' does not match URI %s.",
         layoutDesc.getName(), mTableURI);
@@ -223,28 +236,28 @@ public final class LayoutTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
-    super.setup();
-    mKiji = Kiji.Factory.open(mTableURI, getConf());
+  protected void setup(final Configuration configuration) throws Exception {
+    super.setup(configuration);
+    mKiji = Kiji.Factory.open(mTableURI, configuration);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected void cleanup() throws IOException {
+  protected void cleanup(final Configuration configuration) throws IOException {
     ResourceUtils.releaseOrLog(mKiji);
     mKiji = null;
-    super.cleanup();
+    super.cleanup(configuration);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     if (mDo.equals("dump")) {
       dumpLayout();
     } else if (mDo.equals("set")) {
       Preconditions.checkArgument(!mLayout.isEmpty(),
           "Specify the layout with --layout=path/to/layout.json");
-      setLayout(mKiji);
+      setLayout(mKiji, configuration);
     } else if (mDo.equals("history")) {
       history();
     } else {
@@ -273,6 +286,7 @@ public final class LayoutTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    System.exit(new KijiToolLauncher().run(new LayoutTool(), args));
+    final LayoutTool layoutTool = new LayoutTool();
+    System.exit(new KijiToolLauncher().run(layoutTool, args, layoutTool.generateConfiguration()));
   }
 }

@@ -148,8 +148,7 @@ public class IntegrationHelper extends Configured {
     // Run the tool.
     LOG.debug("Running tool " + tool.getClass().getName() + " with args " + Arrays.toString(args));
     KijiToolLauncher launcher = new KijiToolLauncher();
-    launcher.setConf(conf);
-    int exitCode = launcher.run(tool, args);
+    int exitCode = launcher.run(tool, args, conf);
     return new ToolResult(exitCode, output);
   }
 

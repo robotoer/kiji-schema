@@ -25,6 +25,8 @@ import java.util.Set;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
 
 import org.kiji.annotations.ApiAudience;
@@ -113,12 +115,18 @@ public final class DeleteTool extends BaseTool {
     return "Data";
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
   /** Prefix used when specifying timestamps up-to a given time. */
   private static final String TIMESTAMP_UPTO_PREFIX = "upto:";
 
   /** {@inheritDoc} */
   @Override
-  protected void validateFlags() throws Exception {
+  protected void validateFlags(final Configuration configuration) throws Exception {
     Preconditions.checkArgument((mTargetURIFlag != null) && !mTargetURIFlag.isEmpty(),
         "Specify a target element to delete or to delete from with "
         + "--target=kiji://hbase-address/kiji-instance[/table[/family[:qualifier]]]");
@@ -301,10 +309,14 @@ public final class DeleteTool extends BaseTool {
    * Deletes an entire Kiji instance.
    *
    * @param instanceURI The Kiji instance to delete.
+   * @param configuration for this tool.
    * @return tool exit code.
    * @throws Exception on error.
    */
-  private int deleteInstance(KijiURI instanceURI) throws Exception {
+  private int deleteInstance(
+      final KijiURI instanceURI,
+      final Configuration configuration
+  ) throws Exception {
     final Kiji kiji = Kiji.Factory.open(instanceURI);
     try {
       getPrintStream().println("WARNING: This instance contains the table(s):");
@@ -322,20 +334,20 @@ public final class DeleteTool extends BaseTool {
       kiji.release();
     }
 
-    KijiInstaller.get().uninstall(kiji.getURI(), getConf());
+    KijiInstaller.get().uninstall(kiji.getURI(), configuration);
     getPrintStream().println(String.format("Kiji instance '%s' deleted.", kiji.getURI()));
     return SUCCESS;
   }
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     if (mTargetURI.getTable() == null) {
       // No table specified: delete Kiji instance:
-      return deleteInstance(mTargetURI);
+      return deleteInstance(mTargetURI, configuration);
     }
 
-    final Kiji kiji = Kiji.Factory.open(mTargetURI, getConf());
+    final Kiji kiji = Kiji.Factory.open(mTargetURI, configuration);
     try {
       final List<KijiColumnName> columns = mTargetURI.getColumns();  // never null
 

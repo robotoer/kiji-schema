@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Random;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
@@ -80,6 +82,12 @@ public final class SynthesizeUserDataTool extends BaseTool {
     return "Example";
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
   /**
    * Load a list of people names from a file.
    *
@@ -95,8 +103,8 @@ public final class SynthesizeUserDataTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void validateFlags() throws Exception {
-    super.validateFlags();
+  protected void validateFlags(final Configuration configuration) throws Exception {
+    super.validateFlags(configuration);
     Preconditions.checkArgument((mTableURIFlag != null) && !mTableURIFlag.isEmpty(),
         "Specify a target table to write synthesized data to with "
         + "--table=kiji://hbase-address/kiji-instance/table");
@@ -110,14 +118,14 @@ public final class SynthesizeUserDataTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws IOException {
-    mKiji = Kiji.Factory.open(mTableURI, getConf());
+  protected void setup(final Configuration configuration) throws IOException {
+    mKiji = Kiji.Factory.open(mTableURI, configuration);
     mTable = mKiji.openTable(mTableURI.getTable());
   }
 
   /** {@inheritDoc} */
   @Override
-  protected void cleanup() throws IOException {
+  protected void cleanup(final Configuration configuration) throws IOException {
     ResourceUtils.releaseOrLog(mTable);
     ResourceUtils.releaseOrLog(mKiji);
 
@@ -128,7 +136,7 @@ public final class SynthesizeUserDataTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     // Generate a bunch of user rows with names and email addresses.
     final Random random = new Random(System.currentTimeMillis());
     final List<String> nameDictionary = loadNameDictionary(mNameDictionaryFilename);

@@ -45,6 +45,7 @@ import org.kiji.schema.platform.SchemaPlatformBridge
 import org.kiji.schema.tools.BaseTool
 import org.slf4j.LoggerFactory
 import org.kiji.schema.impl.hbase.HBaseKijiTable
+import org.apache.hadoop.conf.Configuration
 
 /** HFile testing utilities. */
 class HFileTool extends BaseTool {
@@ -190,12 +191,14 @@ class HFileTool extends BaseTool {
     }
   }
 
+  override def generateConfiguration(): Configuration = HBaseConfiguration.create()
+
   /**
    * Program entry point.
    *
    * @param unparsed is the array of command-line arguments.
    */
-  override def run(unparsed: JList[String]): Int = {
+  override def run(unparsed: JList[String], configuration: Configuration): Int = {
     // Requires either --do=(import|export) or a single unnamed argument (exclusive OR):
     if (!((unparsed.size == 1) ^ ((doFlag != null) && unparsed.isEmpty))) {
       FlagParser.printUsage(this, Console.out)
@@ -246,7 +249,7 @@ class HFileTool extends BaseTool {
     } else if ((hbaseFlag != null) && (htableFlag != null)) {
       val hbaseURI = KijiURI.newBuilder(hbaseFlag).build()
       val htableFactory = HBaseFactory.Provider.get().getHTableInterfaceFactory(hbaseURI)
-      val htable = htableFactory.create(getConf, htableFlag)
+      val htable = htableFactory.create(configuration, htableFlag)
       try {
           runAction(htable, filePath)
       } finally {

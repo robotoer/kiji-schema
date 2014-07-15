@@ -144,8 +144,8 @@ public class TestCassandraKijiRowData {
     final KijiRowData input = mReader.get(mEntityId, dataRequest);
 
     assertNotNull(input.getMostRecentValue(FAMILY, QUAL3));
-    final int integer = input.getMostRecentValue(FAMILY, QUAL3);
-    assertEquals(42, integer);
+    final Integer integer = input.getMostRecentValue(FAMILY, QUAL3);
+    assertEquals(42, integer.intValue());
   }
 
   @Test

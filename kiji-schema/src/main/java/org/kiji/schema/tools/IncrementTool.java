@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +80,13 @@ public final class IncrementTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void validateFlags() throws Exception {
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void validateFlags(final Configuration configuration) throws Exception {
     Preconditions.checkArgument(null != mCellURIFlag, "Specify a cell address with "
         + "--cell=kiji://hbase-address/kiji-instance/table/family:qualifier");
     mCellURI = KijiURI.newBuilder(mCellURIFlag).build();
@@ -88,8 +96,8 @@ public final class IncrementTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
-    final Kiji kiji = Kiji.Factory.open(mCellURI, getConf());
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
+    final Kiji kiji = Kiji.Factory.open(mCellURI, configuration);
     try {
       final KijiTable table = kiji.openTable(mCellURI.getTable());
       try {
@@ -131,6 +139,10 @@ public final class IncrementTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    System.exit(new KijiToolLauncher().run(new IncrementTool(), args));
+    final IncrementTool incrementTool = new IncrementTool();
+    System.exit(new KijiToolLauncher().run(
+            incrementTool, args,
+            incrementTool.generateConfiguration()
+        ));
   }
 }

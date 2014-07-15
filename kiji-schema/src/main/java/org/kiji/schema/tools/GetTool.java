@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +102,12 @@ public final class GetTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public String getUsageString() {
     return
         "Usage:\n"
@@ -144,7 +152,7 @@ public final class GetTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     if (nonFlagArgs.isEmpty()) {
       // TODO: Send this error to a future getErrorStream()
       getPrintStream().printf("URI must be specified as an argument%n");
@@ -191,7 +199,7 @@ public final class GetTool extends BaseTool {
       return FAILURE;
     }
 
-    final Kiji kiji = Kiji.Factory.open(argURI, getConf());
+    final Kiji kiji = Kiji.Factory.open(argURI, configuration);
     try {
       final KijiTable table = kiji.openTable(argURI.getTable());
       try {
@@ -234,6 +242,7 @@ public final class GetTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    System.exit(new KijiToolLauncher().run(new GetTool(), args));
+    final GetTool getTool = new GetTool();
+    System.exit(new KijiToolLauncher().run(getTool, args, getTool.generateConfiguration()));
   }
 }

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,8 +78,14 @@ public final class InstallTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
-    super.setup();
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void setup(final Configuration configuration) throws Exception {
+    super.setup(configuration);
     Preconditions.checkArgument((mKijiURIFlag != null) && !mKijiURIFlag.isEmpty(),
         "Specify the Kiji instance to install with --kiji=kiji://hbase-address/kiji-instance");
     mKijiURI = KijiURI.newBuilder(mKijiURIFlag).build();
@@ -87,7 +95,7 @@ public final class InstallTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     getPrintStream().println("Creating kiji instance: " + mKijiURI);
     getPrintStream().println("Creating meta tables for kiji instance in hbase...");
     final Map<String, String> initialProperties = (null == mPropertiesFile)
@@ -98,7 +106,8 @@ public final class InstallTool extends BaseTool {
           mKijiURI,
           HBaseFactory.Provider.get(),
           initialProperties,
-          getConf());
+          configuration
+      );
       getPrintStream().println("Successfully created kiji instance: " + mKijiURI);
       return SUCCESS;
     } catch (KijiAlreadyExistsException kaee) {
@@ -114,6 +123,7 @@ public final class InstallTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    System.exit(new KijiToolLauncher().run(new InstallTool(), args));
+    final InstallTool installTool = new InstallTool();
+    System.exit(new KijiToolLauncher().run(installTool, args, installTool.generateConfiguration()));
   }
 }

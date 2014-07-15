@@ -23,9 +23,11 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,8 +103,14 @@ public final class CreateTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void validateFlags() throws Exception {
-    super.validateFlags();
+  public Configuration generateConfiguration() {
+    return HBaseConfiguration.create();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void validateFlags(final Configuration configuration) throws Exception {
+    super.validateFlags(configuration);
     Preconditions.checkArgument((mTableURIFlag != null) && !mTableURIFlag.isEmpty(),
         "Specify the table to create with --table=kiji://hbase-address/kiji-instance/table");
     mTableURI = KijiURI.newBuilder(mTableURIFlag).build();
@@ -122,26 +130,27 @@ public final class CreateTableTool extends BaseTool {
 
   /** {@inheritDoc} */
   @Override
-  protected void setup() throws Exception {
-    super.setup();
-    mKiji = Kiji.Factory.open(mTableURI, getConf());
+  protected void setup(final Configuration configuration) throws Exception {
+    super.setup(configuration);
+    mKiji = Kiji.Factory.open(mTableURI, configuration);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected void cleanup() throws IOException {
+  protected void cleanup(final Configuration configuration) throws IOException {
     mKiji.release();
     mKiji = null;
-    super.cleanup();
+    super.cleanup(configuration);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected int run(List<String> nonFlagArgs) throws Exception {
+  protected int run(List<String> nonFlagArgs, final Configuration configuration) throws Exception {
     getPrintStream().println("Parsing table layout: " + mLayout);
     final Path path = new Path(mLayout);
-    final FileSystem fs =
-        fileSystemSpecified(path) ? path.getFileSystem(getConf()) : FileSystem.getLocal(getConf());
+    final FileSystem fs = fileSystemSpecified(path)
+        ? path.getFileSystem(configuration)
+        : FileSystem.getLocal(configuration);
     final FSDataInputStream inputStream = fs.open(path);
     final TableLayoutDesc tableLayout = KijiTableLayout.readTableLayoutDescFromJSON(inputStream);
     final String tableName = tableLayout.getName();
@@ -151,9 +160,9 @@ public final class CreateTableTool extends BaseTool {
 
     // For large numbers of initial regions, table creation may take a long time as we wait for
     // the new regions to come online. Increase the hbase RPC timeout to compensate.
-    int hbaseTimeout = getConf().getInt("hbase.rpc.timeout", 60000);
+    int hbaseTimeout = configuration.getInt("hbase.rpc.timeout", 60000);
     hbaseTimeout = hbaseTimeout * 10;
-    getConf().setInt("hbase.rpc.timeout", hbaseTimeout);
+    configuration.setInt("hbase.rpc.timeout", hbaseTimeout);
 
     getPrintStream().println("Creating Kiji table " + mTableURI);
     if (mNumRegions >= 1) {
@@ -180,8 +189,8 @@ public final class CreateTableTool extends BaseTool {
       // Open the split key file.
       final Path splitKeyFilePath = new Path(mSplitKeyFilePath);
       final FileSystem splitKeyPathFs = fileSystemSpecified(splitKeyFilePath)
-          ? splitKeyFilePath.getFileSystem(getConf())
-          : FileSystem.getLocal(getConf());
+          ? splitKeyFilePath.getFileSystem(configuration)
+          : FileSystem.getLocal(configuration);
       final FSDataInputStream splitKeyFileInputStream = splitKeyPathFs.open(splitKeyFilePath);
 
       // Read the split keys.
