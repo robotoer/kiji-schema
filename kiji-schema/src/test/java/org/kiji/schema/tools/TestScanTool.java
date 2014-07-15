@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+import org.kiji.common.tools.BaseTool;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.EntityIdFactory;
 import org.kiji.schema.Kiji;

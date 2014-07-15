@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import org.kiji.common.tools.BaseTool;
 import org.kiji.schema.KijiURI;
 import org.kiji.schema.avro.TableLayoutDesc;
 import org.kiji.schema.layout.InvalidLayoutException;
@@ -70,12 +71,16 @@ public class TestCreateTableTool extends KijiToolTest {
     final KijiURI tableURI =
         KijiURI.newBuilder(getKiji().getURI()).withTableName(layout.getName()).build();
 
-    assertEquals(BaseTool.SUCCESS, runTool(new CreateTableTool(),
-      "--table=" + tableURI,
-      "--layout=" + layoutFile,
-      "--num-regions=" + 2,
-      "--debug"
-    ));
+    assertEquals(
+        BaseTool.SUCCESS,
+        runTool(
+            new CreateTableTool(),
+            "--table=" + tableURI,
+            "--layout=" + layoutFile,
+            "--num-regions=" + 2,
+            "--debug"
+        )
+    );
     assertEquals(2, mToolOutputLines.length);
     assertTrue(mToolOutputLines[0].startsWith("Parsing table layout: "));
     assertTrue(mToolOutputLines[1].startsWith("Creating Kiji table"));

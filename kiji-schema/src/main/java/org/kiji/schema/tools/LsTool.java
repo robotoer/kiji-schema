@@ -35,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
+import org.kiji.common.tools.BaseTool;
+import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.KConstants;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiColumnName;
@@ -265,7 +267,6 @@ public final class LsTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    final LsTool lsTool = new LsTool();
-    System.exit(new KijiToolLauncher().run(lsTool, args, lsTool.generateConfiguration()));
+    System.exit(new KijiToolLauncher().run(new LsTool(), args));
   }
 }

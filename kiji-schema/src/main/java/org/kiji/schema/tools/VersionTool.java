@@ -27,6 +27,8 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
+import org.kiji.common.tools.BaseTool;
+import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.KConstants;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiURI;

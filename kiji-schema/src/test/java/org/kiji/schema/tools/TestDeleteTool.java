@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.kiji.common.tools.BaseTool;
 import org.kiji.schema.KijiColumnName;
 import org.kiji.schema.KijiDataRequest;
 import org.kiji.schema.KijiDataRequestBuilder;
@@ -97,11 +98,15 @@ public class TestDeleteTool extends KijiToolTest {
         mReader.get(mTable.getEntityId("row-1"), KijiDataRequest.create("family"));
     assertTrue(rowBefore.containsColumn("family"));
 
-    assertEquals(BaseTool.SUCCESS, runTool(new DeleteTool(),
-      "--target=" + mTableURI,
-      "--entity-id=row-1",
-      "--interactive=false"
-    ));
+    assertEquals(
+        BaseTool.SUCCESS,
+        runTool(
+            new DeleteTool(),
+            "--target=" + mTableURI,
+            "--entity-id=row-1",
+            "--interactive=false"
+        )
+    );
 
     final KijiRowData rowAfter =
         mReader.get(mTable.getEntityId("row-1"), KijiDataRequest.create("family"));

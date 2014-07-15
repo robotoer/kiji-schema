@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.kiji.schema</groupId>
     <artifactId>kiji-schema-root</artifactId>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>1.6.0-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -39,6 +39,8 @@
     <!-- Protocol library version must match the version Hadoop/HBase rely on. -->
     <protobuf.version>2.4.0a</protobuf.version>
     <commons-pool.version>1.6</commons-pool.version>
+
+    <kiji-common.version>0.1.0-SNAPSHOT</kiji-common.version>
   </properties>
 
   <build>
@@ -184,6 +186,12 @@
       <groupId>org.kiji.checkin</groupId>
       <artifactId>kiji-checkin</artifactId>
       <version>${kiji-checkin.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.kiji.common</groupId>
+      <artifactId>kiji-common-tools</artifactId>
+      <version>${kiji-common.version}</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
+import org.kiji.common.tools.BaseTool;
 import org.kiji.schema.KConstants;
 import org.kiji.schema.KijiURI;
 import org.kiji.schema.zookeeper.ZooKeeperUtils;

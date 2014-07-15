@@ -35,6 +35,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
+import org.kiji.common.tools.BaseTool;
+import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiURI;
 import org.kiji.schema.avro.TableLayoutDesc;
@@ -286,7 +288,6 @@ public final class LayoutTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    final LayoutTool layoutTool = new LayoutTool();
-    System.exit(new KijiToolLauncher().run(layoutTool, args, layoutTool.generateConfiguration()));
+    System.exit(new KijiToolLauncher().run(new LayoutTool(), args));
   }
 }

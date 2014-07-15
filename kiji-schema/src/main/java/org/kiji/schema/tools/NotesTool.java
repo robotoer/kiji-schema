@@ -31,6 +31,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.kiji.annotations.ApiAudience;
 import org.kiji.annotations.ApiStability;
 import org.kiji.common.flags.Flag;
+import org.kiji.common.tools.BaseTool;
 import org.kiji.schema.InternalKijiError;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiColumnName;

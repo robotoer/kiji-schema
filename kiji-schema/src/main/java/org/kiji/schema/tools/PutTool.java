@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
+import org.kiji.common.tools.BaseTool;
+import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiColumnName;

@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
+import org.kiji.common.tools.BaseTool;
+import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiColumnName;
@@ -139,10 +141,6 @@ public final class IncrementTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    final IncrementTool incrementTool = new IncrementTool();
-    System.exit(new KijiToolLauncher().run(
-            incrementTool, args,
-            incrementTool.generateConfiguration()
-        ));
+    System.exit(new KijiToolLauncher().run(new IncrementTool(), args));
   }
 }

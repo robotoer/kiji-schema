@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
+import org.kiji.common.tools.BaseTool;
+import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.KConstants;
 import org.kiji.schema.KijiAlreadyExistsException;
 import org.kiji.schema.KijiInstaller;
@@ -123,7 +125,6 @@ public final class InstallTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    final InstallTool installTool = new InstallTool();
-    System.exit(new KijiToolLauncher().run(installTool, args, installTool.generateConfiguration()));
+    System.exit(new KijiToolLauncher().run(new InstallTool(), args));
   }
 }

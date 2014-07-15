@@ -43,9 +43,12 @@ import org.apache.hadoop.io.WritableComparable
 import org.apache.hadoop.util.ReflectionUtils
 import org.kiji.common.flags.Flag
 import org.kiji.common.flags.FlagParser
-import org.kiji.schema.tools.BaseTool
 import org.slf4j.LoggerFactory
 import org.apache.hadoop.hbase.HBaseConfiguration
+import org.kiji.common.tools.BaseTool
+import org.kiji.common.tools.BaseTool
+import org.kiji.common.tools.BaseTool
+import org.kiji.common.tools.BaseTool
 
 /**
  * Command-line tool to inspect common files used in Map/Reduce jobs.

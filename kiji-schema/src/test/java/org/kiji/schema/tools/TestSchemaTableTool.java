@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.kiji.common.tools.BaseTool;
 import org.kiji.schema.KijiSchemaTable;
 import org.kiji.schema.util.ByteArrayFormatter;
 import org.kiji.schema.util.BytesKey;
@@ -72,11 +73,15 @@ public class TestSchemaTableTool extends KijiToolTest {
 
   @Test
   public void testRegisterSchema() throws Exception {
-    assertEquals(BaseTool.SUCCESS, runTool(new SchemaTableTool(),
-        getKiji().getURI().toString(),
-        "--register=" + mFile.toString(),
-        "--interactive=false"
-    ));
+    assertEquals(
+        BaseTool.SUCCESS,
+        runTool(
+            new SchemaTableTool(),
+            getKiji().getURI().toString(),
+            "--register=" + mFile.toString(),
+            "--interactive=false"
+        )
+    );
     assertEquals(mSimpleSchema, mTable.getSchema(Long.parseLong(mToolOutputLines[0])));
   }
 

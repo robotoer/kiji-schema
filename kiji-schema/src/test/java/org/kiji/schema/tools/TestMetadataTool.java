@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-
 import org.junit.Test;
 
+import org.kiji.common.tools.BaseTool;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.layout.KijiTableLayouts;
 

@@ -42,10 +42,14 @@ import org.kiji.schema.Kiji
 import org.kiji.schema.KijiURI
 import org.kiji.schema.hbase.HBaseFactory
 import org.kiji.schema.platform.SchemaPlatformBridge
-import org.kiji.schema.tools.BaseTool
 import org.slf4j.LoggerFactory
 import org.kiji.schema.impl.hbase.HBaseKijiTable
 import org.apache.hadoop.conf.Configuration
+import org.kiji.common.tools.BaseTool
+import org.kiji.common.tools.BaseTool
+import org.kiji.common.tools.BaseTool
+import org.kiji.common.tools.BaseTool
+import org.kiji.common.tools.BaseTool
 
 /** HFile testing utilities. */
 class HFileTool extends BaseTool {
