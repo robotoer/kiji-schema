@@ -82,7 +82,7 @@ import org.kiji.schema.util.BytesKey;
  */
 
 @ApiAudience.Private
-public final class SchemaTableTool extends BaseTool {
+public final class SchemaTableTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(SchemaTableTool.class);
 
   @Flag(name="register", usage="Path to a file containing a schema defintion "
@@ -129,12 +129,6 @@ public final class SchemaTableTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Metadata";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

@@ -61,7 +61,7 @@ import org.kiji.schema.zookeeper.ZooKeeperUtils;
  * </pre></code>
  */
 @ApiAudience.Private
-public final class ServicesTool extends BaseTool {
+public final class ServicesTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(ServicesTool.class);
   private static final String BASE_PATH = "/kiji/services";
 
@@ -252,11 +252,5 @@ public final class ServicesTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Admin";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 }

@@ -54,7 +54,7 @@ import org.kiji.schema.util.ResourceUtils;
  *   get-all to return all system table properties, including version
  */
 @ApiAudience.Private
-public final class SystemTableTool extends BaseTool {
+public final class SystemTableTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(SystemTableTool.class);
 
   @Flag(name="kiji", usage="KijiURI of the kiji instance to inspect.")
@@ -101,12 +101,6 @@ public final class SystemTableTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Metadata";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

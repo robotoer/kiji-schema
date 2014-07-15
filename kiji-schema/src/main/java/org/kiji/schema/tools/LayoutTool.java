@@ -66,7 +66,7 @@ import org.kiji.schema.util.ToJson;
  * </pre>
  */
 @ApiAudience.Private
-public final class LayoutTool extends BaseTool {
+public final class LayoutTool extends KijiSchemaBaseTool {
   @Flag(name="do", usage="Action to perform: dump, set, or history.")
   private String mDo = "dump";
 
@@ -113,12 +113,6 @@ public final class LayoutTool extends BaseTool {
   @Override
   public String getCategory() {
     return "DDL";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

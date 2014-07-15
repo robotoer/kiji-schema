@@ -41,7 +41,7 @@ import org.kiji.schema.util.VersionInfo;
  * in use for a specified kiji instance.
  */
 @ApiAudience.Private
-public final class VersionTool extends BaseTool {
+public final class VersionTool extends KijiSchemaBaseTool {
 
   @Flag(name="kiji", usage="URI of the Kiji instance to print the version of.")
   private String mKijiURIFlag = KConstants.DEFAULT_INSTANCE_URI;
@@ -64,12 +64,6 @@ public final class VersionTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Help";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

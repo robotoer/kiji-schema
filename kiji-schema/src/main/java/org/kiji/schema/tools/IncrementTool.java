@@ -46,7 +46,7 @@ import org.kiji.schema.util.ResourceUtils;
  * Command-line tool to increment a counter in a cell of a kiji table.
  */
 @ApiAudience.Private
-public final class IncrementTool extends BaseTool {
+public final class IncrementTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(IncrementTool.class);
 
   @Flag(name="cell", usage="URI of the cell(s) (qualified column) to increment, "
@@ -78,12 +78,6 @@ public final class IncrementTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Data";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

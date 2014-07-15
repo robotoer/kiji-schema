@@ -49,7 +49,7 @@ import org.kiji.schema.util.ResourceUtils;
  * A tool to backup and restore Metadata.
  */
 @ApiAudience.Private
-public final class MetadataTool extends BaseTool {
+public final class MetadataTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(MetadataTool.class);
   private MetadataRestorer mRestorer = new MetadataRestorer();
 
@@ -91,12 +91,6 @@ public final class MetadataTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Metadata";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /**

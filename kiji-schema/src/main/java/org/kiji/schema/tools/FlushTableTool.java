@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
-import org.kiji.common.tools.BaseTool;
 import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.KConstants;
 import org.kiji.schema.KijiURI;
@@ -54,7 +53,7 @@ import org.kiji.schema.util.ResourceUtils;
  * </pre>
  */
 @ApiAudience.Private
-public final class FlushTableTool extends BaseTool {
+public final class FlushTableTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(FlushTableTool.class.getName());
 
   @Flag(name="target", usage="URI of the Kiji table or the Kiji instance to flush.")
@@ -84,12 +83,6 @@ public final class FlushTableTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Admin";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

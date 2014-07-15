@@ -26,12 +26,10 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
-import org.kiji.common.tools.BaseTool;
 import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.EntityId;
 import org.kiji.schema.Kiji;
@@ -65,7 +63,7 @@ import org.kiji.schema.KijiURI;
  * </pre>
  */
 @ApiAudience.Private
-public final class DeleteTool extends BaseTool {
+public final class DeleteTool extends KijiSchemaBaseTool {
   @Flag(name="target", usage="URI of the element(s) to delete. Valid scopes are: "
       + "entire Kiji instance, entire Kiji table, entire family/column or set of families/columns.")
   private String mTargetURIFlag = null;
@@ -115,12 +113,6 @@ public final class DeleteTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Data";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** Prefix used when specifying timestamps up-to a given time. */

@@ -53,7 +53,7 @@ import org.kiji.schema.util.ResourceUtils;
  * must also specify an Avro schema (as a JSON string) when writing a value with this tool.
  */
 @ApiAudience.Private
-public final class PutTool extends BaseTool {
+public final class PutTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(PutTool.class.getName());
 
   @Flag(name="target", usage="Kiji URI of the target column.")
@@ -100,12 +100,6 @@ public final class PutTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Data";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

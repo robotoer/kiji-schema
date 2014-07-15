@@ -57,7 +57,7 @@ import org.kiji.schema.layout.KijiTableLayout.LocalityGroupLayout.FamilyLayout.C
  * </pre>
  */
 @ApiAudience.Private
-public final class GetTool extends BaseTool {
+public final class GetTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(GetTool.class);
 
   @Flag(name="entity-id", usage="ID of a single row to look up.\n"
@@ -100,12 +100,6 @@ public final class GetTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Data";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */
@@ -244,7 +238,6 @@ public final class GetTool extends BaseTool {
    * @throws Exception If there is an error.
    */
   public static void main(String[] args) throws Exception {
-    final GetTool getTool = new GetTool();
-    System.exit(new KijiToolLauncher().run(getTool, args, getTool.generateConfiguration()));
+    System.exit(new KijiToolLauncher().run(new GetTool(), args));
   }
 }

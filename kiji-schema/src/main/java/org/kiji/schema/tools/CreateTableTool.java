@@ -27,14 +27,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
-import org.kiji.common.tools.BaseTool;
 import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.Kiji;
 import org.kiji.schema.KijiURI;
@@ -46,7 +44,7 @@ import org.kiji.schema.util.SplitKeyFile;
  * Command-line tool for creating kiji tables in kiji instances.
  */
 @ApiAudience.Private
-public final class CreateTableTool extends BaseTool {
+public final class CreateTableTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(CreateTableTool.class);
 
   @Flag(name="table", usage="URI of the Kiji table to create,"
@@ -101,12 +99,6 @@ public final class CreateTableTool extends BaseTool {
   @Override
   public String getCategory() {
     return "DDL";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

@@ -114,7 +114,7 @@ public final class HelpTool extends Configured implements KijiTool {
       if (null != subTool) {
         System.out.println(subTool.getName() + ": " + subTool.getDescription());
         System.out.println("");
-        subTool.toolMain(Collections.singletonList("--help"), configuration);
+        subTool.toolMain(Collections.singletonList("--help"), subTool.generateConfiguration());
         return 0;
       } else {
         System.out.println("Error - no such tool: " + toolName);

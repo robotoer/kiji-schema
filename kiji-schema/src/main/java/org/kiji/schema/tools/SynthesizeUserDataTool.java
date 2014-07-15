@@ -46,7 +46,7 @@ import org.kiji.schema.util.ResourceUtils;
  * Synthesize some user data into a kiji table.
  */
 @ApiAudience.Private
-public final class SynthesizeUserDataTool extends BaseTool {
+public final class SynthesizeUserDataTool extends KijiSchemaBaseTool {
   @Flag(name="name-dict", usage="File that contains people names, one per line")
   private String mNameDictionaryFilename = "org/kiji/schema/tools/synth/top_names.txt";
 
@@ -82,12 +82,6 @@ public final class SynthesizeUserDataTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Example";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /**

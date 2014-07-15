@@ -69,7 +69,7 @@ import org.kiji.schema.util.ResourceUtils;
  * </pre>
  */
 @ApiAudience.Private
-public final class ScanTool extends BaseTool {
+public final class ScanTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(ScanTool.class);
 
   @Flag(name="start-row",
@@ -128,12 +128,6 @@ public final class ScanTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Data";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

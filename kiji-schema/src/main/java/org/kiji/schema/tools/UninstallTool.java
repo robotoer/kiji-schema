@@ -41,7 +41,7 @@ import org.kiji.schema.KijiURI;
  * A command-line tool for uninstalling kiji instances from an hbase cluster.
  */
 @ApiAudience.Private
-public final class UninstallTool extends BaseTool {
+public final class UninstallTool extends KijiSchemaBaseTool {
 
   @Flag(name="kiji", usage="URI of the Kiji instance to uninstall.")
   private String mKijiURIFlag = KConstants.DEFAULT_INSTANCE_URI;
@@ -65,12 +65,6 @@ public final class UninstallTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Admin";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

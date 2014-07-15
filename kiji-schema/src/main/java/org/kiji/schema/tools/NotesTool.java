@@ -97,7 +97,7 @@ import org.kiji.schema.KijiURIException;
  */
 @ApiAudience.Public
 @ApiStability.Experimental
-public final class NotesTool extends BaseTool {
+public final class NotesTool extends KijiSchemaBaseTool {
 
   @Flag(name="target", usage="Specify the KijiURI of the target of your operation. Must include at "
       + "least a table and may include exactly one column.")
@@ -167,12 +167,6 @@ public final class NotesTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Metadata";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** Possible operations of this tool. */

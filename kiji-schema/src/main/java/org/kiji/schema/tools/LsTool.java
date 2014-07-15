@@ -73,7 +73,7 @@ import org.kiji.schema.util.ResourceUtils;
  *
  */
 @ApiAudience.Private
-public final class LsTool extends BaseTool {
+public final class LsTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(LsTool.class);
 
   /** {@inheritDoc} */
@@ -92,12 +92,6 @@ public final class LsTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Data";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */

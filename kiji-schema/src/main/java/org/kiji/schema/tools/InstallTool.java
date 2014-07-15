@@ -25,13 +25,11 @@ import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
-import org.kiji.common.tools.BaseTool;
 import org.kiji.common.tools.KijiToolLauncher;
 import org.kiji.schema.KConstants;
 import org.kiji.schema.KijiAlreadyExistsException;
@@ -44,7 +42,7 @@ import org.kiji.schema.impl.hbase.HBaseSystemTable;
  * A command-line tool for installing kiji instances on hbase clusters.
  */
 @ApiAudience.Private
-public final class InstallTool extends BaseTool {
+public final class InstallTool extends KijiSchemaBaseTool {
   private static final Logger LOG = LoggerFactory.getLogger(InstallTool.class);
 
   @Flag(name="kiji", usage="URI of the Kiji instance to install.")
@@ -76,12 +74,6 @@ public final class InstallTool extends BaseTool {
   @Override
   public String getCategory() {
     return "Admin";
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Configuration generateConfiguration() {
-    return HBaseConfiguration.create();
   }
 
   /** {@inheritDoc} */
