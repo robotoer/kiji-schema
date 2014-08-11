@@ -532,7 +532,10 @@ public final class HBaseKijiTable implements KijiTable {
         final List<Path> hfilePaths = Lists.newArrayList();
 
         // Try to find any hfiles for partitions within the passed in path
-        final FileStatus[] hfiles = FileSystem.get(mConf).globStatus(new Path(hfilePath, "*"));
+        final FileStatus[] hfiles = FileSystem
+            // Pick a specific filesystem to load rather than relying on the "default" fs.
+            .get(hfilePath.toUri(), mConf)
+            .globStatus(new Path(hfilePath, "*"));
         for (FileStatus hfile : hfiles) {
           String partName = hfile.getPath().getName();
           if (!partName.startsWith("_") && partName.endsWith(".hfile")) {
